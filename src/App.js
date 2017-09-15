@@ -1,30 +1,20 @@
 import React, { Component } from 'react';
 import './App.css';
-import QuaggaLive from './components/QuaggaLive'
-import QuaggaFile from './components/QuaggaFile'
+import BarcodeRead from './components/BarcodeRead'
+import DisplayDress, { getData } from './components/DisplayDress'
 
 class App extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
-      scanning: false,
-      result: '',
+      code: null,
+      needCode: true,
     }
-
-    this.onDetect = this.onDetect.bind(this)
-    this.startScan = this.startScan.bind(this)
-    this.stopScan = this.stopScan.bind(this)
   }
 
-  onDetect(result) {
-    this.setState({ result, scanning: false })
-  }
-  startScan() {
-    this.setState({ scanning: true })
-  }
-  stopScan() {
-    this.setState({ scanning: false })
+  onCodeChange(code) {
+    this.setState({ code, needCode: false })
   }
 
   render() {
@@ -34,26 +24,13 @@ class App extends Component {
           <img src="https://mark.trademarkia.com/services/logo.ashx?sid=86853498" alt="logo" style={{ width: '457px', maxWidth: '80%'}} />
         </div>
 
-        <div style={!this.state.scanning ? { visibility: 'hidden' } : null}>
-          <div id="scanner" style={{ width: '500px', height: '300px', margin: 'auto' }} />
-        </div>
+        { this.state.needCode &&  <BarcodeRead onCodeChange={code => this.onCodeChange(code)}/> }
 
-        { this.state.scanning ?
-          <div>
-            {navigator.mediaDevices
-              ? <QuaggaLive onDetected={this.onDetect} />
-              : <QuaggaFile onDetected={this.onDetect} />
-            }
-
-            <button onClick={this.stopScan}>Don't scan</button>
-          </div>
-          :
-          <button onClick={this.startScan}> Scan </button>
+        { !this.state.needCode &&
+          this.state.code &&
+          <DisplayDress code={this.state.code} {...getData(this.state.code)} onBack={() => this.setState({ needCode: true })}/>
         }
 
-        <div>
-          Scan Result: {this.state.result ? this.state.result.codeResult.code : 'none'}
-        </div>
       </div>
     );
   }
